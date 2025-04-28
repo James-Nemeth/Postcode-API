@@ -3,6 +3,7 @@ package nology.io.postcode_api.controllers;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import nology.io.postcode_api.dto.CreateSuburbPostcodeDTO;
+import nology.io.postcode_api.dto.SuburbResponseDTO;
 import nology.io.postcode_api.entities.Suburb;
 import nology.io.postcode_api.services.SuburbPostcodeService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,8 +43,8 @@ public class SuburbPostcodeController {
 
     @Operation(summary = "Get all suburb-postcode combinations")
     @GetMapping("/suburbs")
-    public ResponseEntity<List<Suburb>> getAllSuburbPostcodes() {
-        List<Suburb> allSuburbPostcodes = suburbPostcodeService.getAllSuburbPostcodes();
+    public ResponseEntity<List<SuburbResponseDTO>> getAllSuburbPostcodes() {
+        List<SuburbResponseDTO> allSuburbPostcodes = suburbPostcodeService.getAllSuburbPostcodes();
         return ResponseEntity.ok(allSuburbPostcodes);
     }
 }

@@ -1,8 +1,10 @@
 package nology.io.postcode_api.services;
 
 import nology.io.postcode_api.dto.CreateSuburbPostcodeDTO;
+import nology.io.postcode_api.dto.SuburbResponseDTO;
 import nology.io.postcode_api.entities.Postcode;
 import nology.io.postcode_api.entities.Suburb;
+import nology.io.postcode_api.exceptions.ResourceConflictException;
 import nology.io.postcode_api.repositories.PostcodeRepository;
 import nology.io.postcode_api.repositories.SuburbRepository;
 import org.springframework.stereotype.Service;
@@ -23,7 +25,7 @@ public class SuburbPostcodeService {
 
     // Retrieve a list of suburbs by postcode
     public List<String> getSuburbsByPostcode(String postcode) {
-        List<Suburb> suburbs = suburbRepository.findByPostcode_Postcode(postcode);
+        List<Suburb> suburbs = suburbRepository.findAllByPostcode_Postcode(postcode);
         if (suburbs.isEmpty()) {
             throw new IllegalArgumentException("No suburbs found for postcode: " + postcode);
         }
@@ -45,15 +47,20 @@ public class SuburbPostcodeService {
                 .orElseGet(() -> postcodeRepository.save(new Postcode(createSuburbPostcodeDTO.getPostcode())));
 
         if (suburbRepository.findBySuburb(createSuburbPostcodeDTO.getSuburb()).isPresent()) {
-            throw new IllegalArgumentException("Suburb already exists: " + createSuburbPostcodeDTO.getSuburb());
+            throw new ResourceConflictException("Suburb already exists: " + createSuburbPostcodeDTO.getSuburb());
         }
 
         Suburb suburb = new Suburb(createSuburbPostcodeDTO.getSuburb(), postcode);
         return suburbRepository.save(suburb);
     }
 
-    // Get all suburb-postcode combinations
-    public List<Suburb> getAllSuburbPostcodes() {
-        return suburbRepository.findAll();
+    // Get all suburb-postcode combinations as DTOs
+    public List<SuburbResponseDTO> getAllSuburbPostcodes() {
+        return suburbRepository.findAll().stream()
+                .map(suburb -> new SuburbResponseDTO(
+                        suburb.getId(),
+                        suburb.getSuburb(),
+                        suburb.getPostcode().getPostcode()))
+                .collect(Collectors.toList());
     }
 }

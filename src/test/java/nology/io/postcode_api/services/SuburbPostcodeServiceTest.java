@@ -1,6 +1,7 @@
 package nology.io.postcode_api.services;
 
 import nology.io.postcode_api.dto.CreateSuburbPostcodeDTO;
+import nology.io.postcode_api.dto.SuburbResponseDTO;
 import nology.io.postcode_api.entities.Postcode;
 import nology.io.postcode_api.entities.Suburb;
 import nology.io.postcode_api.repositories.PostcodeRepository;
@@ -61,7 +62,7 @@ class SuburbPostcodeServiceTest {
         Postcode postcode = new Postcode(postcodeValue);
         Suburb suburb = new Suburb("Sydney", postcode);
 
-        when(suburbRepository.findByPostcode_Postcode(postcodeValue))
+        when(suburbRepository.findAllByPostcode_Postcode(postcodeValue))
                 .thenReturn(Collections.singletonList(suburb));
 
         List<String> result = suburbPostcodeService.getSuburbsByPostcode(postcodeValue);
@@ -69,7 +70,7 @@ class SuburbPostcodeServiceTest {
         assertThat(result).hasSize(1);
         assertThat(result.get(0)).isEqualTo("Sydney");
 
-        verify(suburbRepository, times(1)).findByPostcode_Postcode(postcodeValue);
+        verify(suburbRepository, times(1)).findAllByPostcode_Postcode(postcodeValue);
     }
 
     @Test
@@ -85,5 +86,28 @@ class SuburbPostcodeServiceTest {
         assertThat(result).isEqualTo("2000");
 
         verify(suburbRepository, times(1)).findBySuburb(suburbName);
+    }
+
+    @Test
+    void shouldGetAllSuburbPostcodes() {
+        Postcode postcode1 = new Postcode("2000");
+        Postcode postcode2 = new Postcode("3000");
+
+        Suburb suburb1 = new Suburb("Sydney", postcode1);
+        suburb1.setId(1L);
+        Suburb suburb2 = new Suburb("Melbourne", postcode2);
+        suburb2.setId(2L);
+
+        when(suburbRepository.findAll()).thenReturn(List.of(suburb1, suburb2));
+
+        List<SuburbResponseDTO> result = suburbPostcodeService.getAllSuburbPostcodes();
+
+        assertThat(result).hasSize(2);
+        assertThat(result.get(0).getSuburb()).isEqualTo("Sydney");
+        assertThat(result.get(0).getPostcode()).isEqualTo("2000");
+        assertThat(result.get(1).getSuburb()).isEqualTo("Melbourne");
+        assertThat(result.get(1).getPostcode()).isEqualTo("3000");
+
+        verify(suburbRepository, times(1)).findAll();
     }
 }

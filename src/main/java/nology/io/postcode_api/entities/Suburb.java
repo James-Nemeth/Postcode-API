@@ -1,5 +1,6 @@
 package nology.io.postcode_api.entities;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 
 @Entity
@@ -15,6 +16,7 @@ public class Suburb {
 
     @ManyToOne
     @JoinColumn(name = "postcode_id", nullable = false)
+    @JsonBackReference
     private Postcode postcode;
 
     public Suburb() {
@@ -51,10 +53,7 @@ public class Suburb {
 
     @Override
     public String toString() {
-        return "Suburb{" +
-                "id=" + id +
-                ", suburb='" + suburb + '\'' +
-                ", postcode=" + postcode +
-                '}';
+        return "Suburb [id=" + id + ", suburb=" + suburb + ", postcode=" + postcode + "]";
     }
+
 }

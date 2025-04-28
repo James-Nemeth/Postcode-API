@@ -1,6 +1,7 @@
 package nology.io.postcode_api.controllers;
 
 import nology.io.postcode_api.dto.CreateSuburbPostcodeDTO;
+import nology.io.postcode_api.dto.SuburbResponseDTO;
 import nology.io.postcode_api.entities.Suburb;
 import nology.io.postcode_api.services.SuburbPostcodeService;
 import org.junit.jupiter.api.BeforeEach;
@@ -84,12 +85,10 @@ class SuburbPostcodeControllerTest {
 
     @Test
     void shouldReturnAllSuburbPostcodes() throws Exception {
-        Suburb suburb1 = new Suburb("Sydney", null);
-        suburb1.setId(1L);
-        Suburb suburb2 = new Suburb("Darling Harbour", null);
-        suburb2.setId(2L);
+        SuburbResponseDTO suburb1 = new SuburbResponseDTO(1L, "Sydney", "2000");
+        SuburbResponseDTO suburb2 = new SuburbResponseDTO(2L, "Darling Harbour", "2000");
 
-        List<Suburb> suburbs = Arrays.asList(suburb1, suburb2);
+        List<SuburbResponseDTO> suburbs = Arrays.asList(suburb1, suburb2);
 
         when(suburbPostcodeService.getAllSuburbPostcodes()).thenReturn(suburbs);
 
@@ -98,6 +97,8 @@ class SuburbPostcodeControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.size()").value(2))
                 .andExpect(jsonPath("$[0].suburb").value("Sydney"))
-                .andExpect(jsonPath("$[1].suburb").value("Darling Harbour"));
+                .andExpect(jsonPath("$[0].postcode").value("2000"))
+                .andExpect(jsonPath("$[1].suburb").value("Darling Harbour"))
+                .andExpect(jsonPath("$[1].postcode").value("2000"));
     }
 }
