@@ -1,58 +1,59 @@
 package nology.io.postcode_api.services;
 
 import nology.io.postcode_api.dto.CreateSuburbPostcodeDTO;
-import nology.io.postcode_api.entities.SuburbPostcode;
-import nology.io.postcode_api.repositories.SuburbPostcodeRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import nology.io.postcode_api.entities.Postcode;
+import nology.io.postcode_api.entities.Suburb;
+import nology.io.postcode_api.repositories.PostcodeRepository;
+import nology.io.postcode_api.repositories.SuburbRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
 public class SuburbPostcodeService {
 
-    @Autowired
-    SuburbPostcodeRepository suburbPostcodeRepository;
+    private final SuburbRepository suburbRepository;
+    private final PostcodeRepository postcodeRepository;
+
+    public SuburbPostcodeService(SuburbRepository suburbRepository, PostcodeRepository postcodeRepository) {
+        this.suburbRepository = suburbRepository;
+        this.postcodeRepository = postcodeRepository;
+    }
 
     // Retrieve a list of suburbs by postcode
     public List<String> getSuburbsByPostcode(String postcode) {
-        List<SuburbPostcode> suburbPostcodes = suburbPostcodeRepository.findByPostcode(postcode);
-        if (suburbPostcodes.isEmpty()) {
+        List<Suburb> suburbs = suburbRepository.findByPostcode_Postcode(postcode);
+        if (suburbs.isEmpty()) {
             throw new IllegalArgumentException("No suburbs found for postcode: " + postcode);
         }
-        return suburbPostcodes.stream()
-                .map(SuburbPostcode::getSuburb)
+        return suburbs.stream()
+                .map(Suburb::getSuburb)
                 .collect(Collectors.toList());
     }
 
     // Retrieve a postcode by suburb name
     public String getPostcodeBySuburb(String suburb) {
-        Optional<SuburbPostcode> suburbPostcode = suburbPostcodeRepository.findBySuburb(suburb);
-        if (suburbPostcode.isEmpty()) {
-            throw new IllegalArgumentException("No postcode found for suburb: " + suburb);
-        }
-        return suburbPostcode.get().getPostcode();
+        Suburb foundSuburb = suburbRepository.findBySuburb(suburb)
+                .orElseThrow(() -> new IllegalArgumentException("No postcode found for suburb: " + suburb));
+        return foundSuburb.getPostcode().getPostcode();
     }
 
     // Add a new suburb-postcode combination
-    public SuburbPostcode addSuburbPostcode(CreateSuburbPostcodeDTO createSuburbPostcodeDTO) {
-        // Validate if the combination already exists
-        Optional<SuburbPostcode> existing = suburbPostcodeRepository.findBySuburb(createSuburbPostcodeDTO.getSuburb());
-        if (existing.isPresent()) {
+    public Suburb addSuburbPostcode(CreateSuburbPostcodeDTO createSuburbPostcodeDTO) {
+        Postcode postcode = postcodeRepository.findByPostcode(createSuburbPostcodeDTO.getPostcode())
+                .orElseGet(() -> postcodeRepository.save(new Postcode(createSuburbPostcodeDTO.getPostcode())));
+
+        if (suburbRepository.findBySuburb(createSuburbPostcodeDTO.getSuburb()).isPresent()) {
             throw new IllegalArgumentException("Suburb already exists: " + createSuburbPostcodeDTO.getSuburb());
         }
 
-        SuburbPostcode newSuburbPostcode = new SuburbPostcode(
-                createSuburbPostcodeDTO.getSuburb(),
-                createSuburbPostcodeDTO.getPostcode());
-
-        return suburbPostcodeRepository.save(newSuburbPostcode);
+        Suburb suburb = new Suburb(createSuburbPostcodeDTO.getSuburb(), postcode);
+        return suburbRepository.save(suburb);
     }
 
     // Get all suburb-postcode combinations
-    public List<SuburbPostcode> getAllSuburbPostcodes() {
-        return suburbPostcodeRepository.findAll();
+    public List<Suburb> getAllSuburbPostcodes() {
+        return suburbRepository.findAll();
     }
 }

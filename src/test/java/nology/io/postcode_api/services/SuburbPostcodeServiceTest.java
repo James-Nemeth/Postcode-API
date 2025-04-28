@@ -1,8 +1,10 @@
 package nology.io.postcode_api.services;
 
 import nology.io.postcode_api.dto.CreateSuburbPostcodeDTO;
-import nology.io.postcode_api.entities.SuburbPostcode;
-import nology.io.postcode_api.repositories.SuburbPostcodeRepository;
+import nology.io.postcode_api.entities.Postcode;
+import nology.io.postcode_api.entities.Suburb;
+import nology.io.postcode_api.repositories.PostcodeRepository;
+import nology.io.postcode_api.repositories.SuburbRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -21,60 +23,67 @@ class SuburbPostcodeServiceTest {
     private SuburbPostcodeService suburbPostcodeService;
 
     @Mock
-    private SuburbPostcodeRepository suburbPostcodeRepository;
+    private SuburbRepository suburbRepository;
+
+    @Mock
+    private PostcodeRepository postcodeRepository;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        suburbPostcodeService = new SuburbPostcodeService();
-        suburbPostcodeService.suburbPostcodeRepository = suburbPostcodeRepository;
+        suburbPostcodeService = new SuburbPostcodeService(suburbRepository, postcodeRepository);
     }
 
     @Test
     void shouldSaveSuburbPostcodeSuccessfully() {
         CreateSuburbPostcodeDTO dto = new CreateSuburbPostcodeDTO("Sydney", "2000");
 
-        when(suburbPostcodeRepository.findBySuburb(dto.getSuburb())).thenReturn(Optional.empty());
-        when(suburbPostcodeRepository.save(any(SuburbPostcode.class)))
-                .thenAnswer(invocation -> invocation.getArgument(0));
+        Postcode postcode = new Postcode("2000");
+        Suburb suburb = new Suburb("Sydney", postcode);
 
-        SuburbPostcode result = suburbPostcodeService.addSuburbPostcode(dto);
+        when(postcodeRepository.findByPostcode(dto.getPostcode())).thenReturn(Optional.of(postcode));
+        when(suburbRepository.findBySuburb(dto.getSuburb())).thenReturn(Optional.empty());
+        when(suburbRepository.save(any(Suburb.class))).thenReturn(suburb);
+
+        Suburb result = suburbPostcodeService.addSuburbPostcode(dto);
 
         assertThat(result.getSuburb()).isEqualTo("Sydney");
-        assertThat(result.getPostcode()).isEqualTo("2000");
+        assertThat(result.getPostcode().getPostcode()).isEqualTo("2000");
 
-        verify(suburbPostcodeRepository, times(1)).findBySuburb(dto.getSuburb());
-        verify(suburbPostcodeRepository, times(1)).save(any(SuburbPostcode.class));
+        verify(postcodeRepository, times(1)).findByPostcode(dto.getPostcode());
+        verify(suburbRepository, times(1)).findBySuburb(dto.getSuburb());
+        verify(suburbRepository, times(1)).save(any(Suburb.class));
     }
 
     @Test
     void shouldGetSuburbsByPostcode() {
-        String postcode = "2000";
-        SuburbPostcode suburbPostcode = new SuburbPostcode("Sydney", postcode);
+        String postcodeValue = "2000";
+        Postcode postcode = new Postcode(postcodeValue);
+        Suburb suburb = new Suburb("Sydney", postcode);
 
-        when(suburbPostcodeRepository.findByPostcode(postcode))
-                .thenReturn(Collections.singletonList(suburbPostcode));
+        when(suburbRepository.findByPostcode_Postcode(postcodeValue))
+                .thenReturn(Collections.singletonList(suburb));
 
-        List<String> result = suburbPostcodeService.getSuburbsByPostcode(postcode);
+        List<String> result = suburbPostcodeService.getSuburbsByPostcode(postcodeValue);
 
         assertThat(result).hasSize(1);
         assertThat(result.get(0)).isEqualTo("Sydney");
 
-        verify(suburbPostcodeRepository, times(1)).findByPostcode(postcode);
+        verify(suburbRepository, times(1)).findByPostcode_Postcode(postcodeValue);
     }
 
     @Test
     void shouldGetPostcodeBySuburb() {
-        String suburb = "Sydney";
-        SuburbPostcode suburbPostcode = new SuburbPostcode(suburb, "2000");
+        String suburbName = "Sydney";
+        Postcode postcode = new Postcode("2000");
+        Suburb suburb = new Suburb(suburbName, postcode);
 
-        when(suburbPostcodeRepository.findBySuburb(suburb))
-                .thenReturn(Optional.of(suburbPostcode));
+        when(suburbRepository.findBySuburb(suburbName)).thenReturn(Optional.of(suburb));
 
-        String result = suburbPostcodeService.getPostcodeBySuburb(suburb);
+        String result = suburbPostcodeService.getPostcodeBySuburb(suburbName);
 
         assertThat(result).isEqualTo("2000");
 
-        verify(suburbPostcodeRepository, times(1)).findBySuburb(suburb);
+        verify(suburbRepository, times(1)).findBySuburb(suburbName);
     }
 }

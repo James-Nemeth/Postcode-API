@@ -1,26 +1,26 @@
 package nology.io.postcode_api.entities;
 
 import jakarta.persistence.*;
+import java.util.List;
 
 @Entity
-@Table(name = "suburb_postcode")
-public class SuburbPostcode {
+@Table(name = "postcodes")
+public class Postcode {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "suburb", nullable = false)
-    private String suburb;
-
-    @Column(name = "postcode", nullable = false)
+    @Column(name = "postcode", nullable = false, unique = true)
     private String postcode;
 
-    public SuburbPostcode() {
+    @OneToMany(mappedBy = "postcode", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Suburb> suburbs;
+
+    public Postcode() {
     }
 
-    public SuburbPostcode(String suburb, String postcode) {
-        this.suburb = suburb;
+    public Postcode(String postcode) {
         this.postcode = postcode;
     }
 
@@ -32,14 +32,6 @@ public class SuburbPostcode {
         this.id = id;
     }
 
-    public String getSuburb() {
-        return suburb;
-    }
-
-    public void setSuburb(String suburb) {
-        this.suburb = suburb;
-    }
-
     public String getPostcode() {
         return postcode;
     }
@@ -48,11 +40,18 @@ public class SuburbPostcode {
         this.postcode = postcode;
     }
 
+    public List<Suburb> getSuburbs() {
+        return suburbs;
+    }
+
+    public void setSuburbs(List<Suburb> suburbs) {
+        this.suburbs = suburbs;
+    }
+
     @Override
     public String toString() {
-        return "SuburbPostcode{" +
+        return "Postcode{" +
                 "id=" + id +
-                ", suburb='" + suburb + '\'' +
                 ", postcode='" + postcode + '\'' +
                 '}';
     }
