@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 public class SuburbPostcodeService {
 
     @Autowired
-    private SuburbPostcodeRepository suburbPostcodeRepository;
+    SuburbPostcodeRepository suburbPostcodeRepository;
 
     // Retrieve a list of suburbs by postcode
     public List<String> getSuburbsByPostcode(String postcode) {
