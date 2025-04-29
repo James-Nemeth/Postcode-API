@@ -16,6 +16,7 @@ public interface SuburbRepository extends JpaRepository<Suburb, Long> {
     @EntityGraph(attributePaths = "postcode")
     List<Suburb> findAllByPostcode_Postcode(String postcode);
 
+    @SuppressWarnings("null")
     @EntityGraph(attributePaths = "postcode")
     List<Suburb> findAll();
 }

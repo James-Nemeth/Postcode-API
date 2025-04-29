@@ -70,6 +70,7 @@ class SuburbPostcodeControllerTest {
         Suburb savedSuburb = new Suburb(suburb, null);
         savedSuburb.setId(1L);
 
+        @SuppressWarnings("unused")
         CreateSuburbPostcodeDTO createSuburbPostcodeDTO = new CreateSuburbPostcodeDTO(suburb, postcode);
 
         when(suburbPostcodeService.addSuburbPostcode(any(CreateSuburbPostcodeDTO.class))).thenReturn(savedSuburb);
